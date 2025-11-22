@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/app/header';
 import PatientForm from '@/components/app/patient-form';
 import ResultsDashboard from '@/components/app/results-dashboard';
@@ -9,11 +10,21 @@ import { explainIcdRiskFactors } from '@/ai/flows/explain-icd-risk-factors';
 import { suggestPersonalizedInterventions } from '@/ai/flows/suggest-personalized-interventions';
 import { useToast } from '@/hooks/use-toast';
 import { featureLabels } from '@/lib/types';
+import { useUser } from '@/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<PredictionResult | null>(null);
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
   const handlePredict = async (data: PatientFormState) => {
     setIsLoading(true);
@@ -79,6 +90,23 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-background">
+        <Header />
+        <main className="flex flex-1 items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">

@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "login-carousel-1",
+      "description": "A futuristic brain scan interface showing neural pathways.",
+      "imageUrl": "https://images.unsplash.com/photo-1617791160536-598cf32026fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxicmFpbiUyMHNjYW58ZW58MHx8fHwxNzYzNzg0NDYwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "brain scan"
+    },
+    {
+      "id": "login-carousel-2",
+      "description": "A doctor kindly consulting with an elderly patient.",
+      "imageUrl": "https://images.unsplash.com/photo-1584515933487-779824d29309?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkb2N0b3IlMjBwYXRpZW50fGVufDB8fHx8MTc2Mzc2MzA3Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor patient"
+    },
+    {
+      "id": "login-carousel-3",
+      "description": "A medical research lab with scientists working on computers.",
+      "imageUrl": "https://images.unsplash.com/photo-1579165466991-467135ad3110?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtZWRpY2FsJTIwcmVzZWFyY2h8ZW58MHx8fHwxNzYzNzg0NDYxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "medical research"
+    }
+  ]
 }
