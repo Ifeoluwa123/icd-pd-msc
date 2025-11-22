@@ -27,7 +27,12 @@ export async function explainIcdRiskFactors(input: ExplainIcdRiskFactorsInput): 
 
 const prompt = ai.definePrompt({
   name: 'explainIcdRiskFactorsPrompt',
-  input: {schema: ExplainIcdRiskFactorsInputSchema},
+  input: {
+    schema: z.object({
+      riskFactorsString: z.string(),
+      patientDetails: z.string(),
+    }),
+  },
   output: {schema: ExplainIcdRiskFactorsOutputSchema},
   prompt: `You are an expert medical professional specializing in Impulse Control Disorders (ICD) in Parkinson\'s Disease patients.
 
@@ -35,7 +40,7 @@ You are provided with a set of risk factors and their corresponding SHAP values,
 
 Based on this information, generate a detailed and easy-to-understand explanation of the key risk factors driving the patient\'s ICD risk. Focus on the most influential factors and explain how they contribute to the overall risk. Tailor the explanation to be understandable for clinicians.
 
-Risk Factors and SHAP Values: {{{JSON.stringify riskFactors}}}
+Risk Factors and SHAP Values: {{{riskFactorsString}}}
 Patient Details: {{{patientDetails}}}
 
 Explanation:`,
@@ -48,7 +53,10 @@ const explainIcdRiskFactorsFlow = ai.defineFlow(
     outputSchema: ExplainIcdRiskFactorsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt({
+      riskFactorsString: JSON.stringify(input.riskFactors),
+      patientDetails: input.patientDetails,
+    });
     return output!;
   }
 );
