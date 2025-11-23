@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 const registerSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required' }),
@@ -67,7 +69,16 @@ export default function RegisterPage() {
         organization: data.organization,
       };
 
-      setDocumentNonBlocking(userDocRef, professionalData, { merge: true });
+      setDoc(userDocRef, professionalData, { merge: true }).catch(error => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: professionalData,
+          })
+        )
+      });
 
       toast({ title: 'Registration Successful', description: 'Your account has been created.' });
       router.push('/');
