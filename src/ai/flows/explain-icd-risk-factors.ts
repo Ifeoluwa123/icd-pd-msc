@@ -8,11 +8,12 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { patientFormSchema } from '@/lib/types';
 import {z} from 'genkit';
 
 const ExplainIcdRiskFactorsInputSchema = z.object({
   riskFactors: z.record(z.number()).describe('A map of risk factors and their corresponding SHAP values.'),
-  patientDetails: z.string().describe('Relevant details about the patient, such as age, gender, and medical history.'),
+  patientDetails: patientFormSchema.describe('Relevant details about the patient, such as age, gender, and medical history.'),
 });
 export type ExplainIcdRiskFactorsInput = z.infer<typeof ExplainIcdRiskFactorsInputSchema>;
 
@@ -28,10 +29,7 @@ export async function explainIcdRiskFactors(input: ExplainIcdRiskFactorsInput): 
 const prompt = ai.definePrompt({
   name: 'explainIcdRiskFactorsPrompt',
   input: {
-    schema: z.object({
-      riskFactorsString: z.string(),
-      patientDetails: z.string(),
-    }),
+    schema: ExplainIcdRiskFactorsInputSchema,
   },
   output: {schema: ExplainIcdRiskFactorsOutputSchema},
   prompt: `You are an expert medical professional specializing in Impulse Control Disorders (ICD) in Parkinson\'s Disease patients.
@@ -40,8 +38,22 @@ You are provided with a set of risk factors and their corresponding SHAP values,
 
 Based on this information, generate a detailed and easy-to-understand explanation of the key risk factors driving the patient\'s ICD risk. Focus on the most influential factors and explain how they contribute to the overall risk. Tailor the explanation to be understandable for clinicians.
 
-Risk Factors and SHAP Values: {{{riskFactorsString}}}
-Patient Details: {{{patientDetails}}}
+Risk Factors and SHAP Values:
+{{{JSON stringify=riskFactors}}}
+
+Patient Details:
+- Age: {{{patientDetails.age}}}
+- Gender: {{{patientDetails.gender}}}
+- Years with Parkinson's: {{{patientDetails.yearsWithParkinsons}}}
+- Time Spent Gambling (hours/week): {{{patientDetails.TMGAMBLE}}}
+- Feels control over gambling: {{{patientDetails.CNTRLGMB}}}
+- Time on Sexual Behaviors (hours/week): {{{patientDetails.TMSEX}}}
+- Feels control over sexual behaviors: {{{patientDetails.CNTRLSEX}}}
+- Time Spent Buying (hours/week): {{{patientDetails.TMBUY}}}
+- Feels control over buying: {{{patientDetails.CNTRLBUY}}}
+- Time Spent Eating (hours/week): {{{patientDetails.TMEAT}}}
+- Feels control over eating: {{{patientDetails.CNTRLEAT}}}
+- Time on Other Hobbies/Activities (hours/week): {{{patientDetails.TMTORACT}}}
 
 Explanation:`,
 });
@@ -53,10 +65,7 @@ const explainIcdRiskFactorsFlow = ai.defineFlow(
     outputSchema: ExplainIcdRiskFactorsOutputSchema,
   },
   async input => {
-    const {output} = await prompt({
-      riskFactorsString: JSON.stringify(input.riskFactors),
-      patientDetails: input.patientDetails,
-    });
+    const {output} = await prompt(input);
     return output!;
   }
 );

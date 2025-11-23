@@ -43,15 +43,11 @@ export default function Home() {
       mockShapValues[feature] = parseFloat((Math.random() * baseValue * 2 - baseValue).toFixed(4));
     });
 
-    const patientDetails = Object.entries(data)
-        .map(([key, value]) => `${featureLabels[key as keyof typeof featureLabels] || key}: ${value}`)
-        .join(', ');
-
     try {
       // 2. Get SHAP explanation
       const explanationResult = await explainIcdRiskFactors({
         riskFactors: mockShapValues,
-        patientDetails: patientDetails,
+        patientDetails: data,
       });
 
       const shapExplanation = explanationResult.explanation;
@@ -64,7 +60,7 @@ export default function Home() {
       const interventionResult = await suggestPersonalizedInterventions({
         riskFactors: riskFactorsString || 'none identified',
         shapAnalysis: shapExplanation,
-        patientDetails: patientDetails,
+        patientDetails: data,
       });
       
       const shapValuesForChart = Object.entries(mockShapValues).map(([feature, value]) => ({ 
