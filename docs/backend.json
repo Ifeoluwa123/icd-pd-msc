@@ -39,7 +39,7 @@
   },
   "auth": {
     "providers": [
-      "password",
+      "email",
       "anonymous"
     ]
   },
