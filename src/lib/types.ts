@@ -40,6 +40,7 @@ export type ShapValue = {
 export type PredictionResult = {
   riskScore: number;
   shapValues: ShapValue[];
-  shapExplanation: string;
-  interventions: string;
+  riskExplanation: string;
+  clinicalInterpretation: string;
+  managementOptions: string;
 };

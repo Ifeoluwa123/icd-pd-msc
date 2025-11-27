@@ -6,8 +6,7 @@ import Header from '@/components/app/header';
 import PatientForm from '@/components/app/patient-form';
 import ResultsDashboard from '@/components/app/results-dashboard';
 import type { PatientFormState, PredictionResult } from '@/lib/types';
-import { explainIcdRiskFactors } from '@/ai/flows/explain-icd-risk-factors';
-import { suggestPersonalizedInterventions } from '@/ai/flows/suggest-personalized-interventions';
+import { generateClinicalSummary } from '@/ai/flows/generate-clinical-summary';
 import { useToast } from '@/hooks/use-toast';
 import { featureLabels } from '@/lib/types';
 import { useUser } from '@/firebase';
@@ -37,30 +36,26 @@ export default function Home() {
 
     const mockShapValues: Record<string, number> = {};
     features.forEach(feature => {
-      // Generate more impactful random values for demonstration
       const isBehavioral = feature.startsWith('TM') || feature.startsWith('CNTRL');
       const baseValue = isBehavioral ? 0.3 : 0.1;
       mockShapValues[feature] = parseFloat((Math.random() * baseValue * 2 - baseValue).toFixed(4));
     });
+    
+    const sortedShap = Object.entries(mockShapValues)
+      .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a));
+
+    const topFeatures = sortedShap.slice(0, 3).reduce((acc, [key, value]) => {
+      acc[featureLabels[key as keyof typeof featureLabels] || key] = value;
+      return acc;
+    }, {} as Record<string, number>);
+
 
     try {
-      // 2. Get SHAP explanation
-      const explanationResult = await explainIcdRiskFactors({
-        riskFactors: mockShapValues,
-        patientDetails: data,
-      });
-
-      const shapExplanation = explanationResult.explanation;
-      const riskFactorsString = Object.entries(mockShapValues)
-        .filter(([, value]) => value > 0.05)
-        .map(([key]) => featureLabels[key as keyof typeof featureLabels] || key)
-        .join(', ');
-
-      // 3. Get intervention suggestions
-      const interventionResult = await suggestPersonalizedInterventions({
-        riskFactors: riskFactorsString || 'none identified',
-        shapAnalysis: shapExplanation,
-        patientDetails: data,
+      // 2. Generate Clinical Summary
+      const summaryResult = await generateClinicalSummary({
+        riskScore,
+        topFeatures,
+        patientHistory: 'Patient history shows increasing gambling time and reduced behavioral control.',
       });
       
       const shapValuesForChart = Object.entries(mockShapValues).map(([feature, value]) => ({ 
@@ -71,8 +66,9 @@ export default function Home() {
       setResults({
         riskScore,
         shapValues: shapValuesForChart,
-        shapExplanation,
-        interventions: interventionResult.suggestions,
+        riskExplanation: summaryResult.riskExplanation,
+        clinicalInterpretation: summaryResult.clinicalInterpretation,
+        managementOptions: summaryResult.managementOptions,
       });
 
     } catch (error) {
