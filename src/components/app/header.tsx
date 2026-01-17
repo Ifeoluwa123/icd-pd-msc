@@ -1,5 +1,5 @@
 'use client';
-import { BrainCircuit, LogIn, LogOut } from "lucide-react";
+import { BrainCircuit, LogIn, LogOut, User } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -63,6 +63,10 @@ export default function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push('/profile')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
