@@ -1,10 +1,13 @@
 /**
- * This ruleset enforces a strict user-ownership model for a medical application.
+ * This ruleset enforces a strict user-ownership model for a medical application,
+ * with an exception for administrative users.
  *
  * Core Philosophy:
  * The security model is built on the principle that a user can only access their
  * own data. All operations (read, create, update, delete) are restricted to the
  * authenticated owner of a document, ensuring patient and professional data privacy.
+ * Admin users, identified by a custom claim, are granted read-only access to all
+ * user data for management purposes.
  *
  * Data Structure:
  * The data is organized in a single top-level collection: `/medicalProfessionals`.
@@ -14,9 +17,9 @@
  * simpler, more secure logic.
  *
  * Key Security Decisions:
- * - No User Listing: It is not possible to query the list of all medical
- *   professionals on the platform. This protects user privacy.
- * - Strict Ownership: All access is gated by matching the document ID with the
+ * - Admin Read-All: Admins can list and read all user profiles.
+ * - No Public User Listing: Non-admin users cannot list other users.
+ * - Strict Ownership for non-admins: All access is gated by matching the document ID with the
  *   requester's authentication UID.
  * - Self-Creation Only: A user can only create their own profile document.
  * - Immutable ID: The internal `id` field of a professional's document, which
@@ -31,7 +34,7 @@
  * Structural Segregation:
  * The design uses a single collection for user profiles, as there is no
  * distinction between public and private profile data in this model. All data
-*  is considered private to the owner.
+ *  is considered private to the owner, except for admins.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -46,6 +49,13 @@ service cloud.firestore {
      */
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    /**
+     * Checks if the user is an administrator via custom claims.
+     */
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
     }
 
     /**
@@ -90,17 +100,18 @@ service cloud.firestore {
     /**
      * @description Controls access to a medical professional's profile document.
      * @path        /medicalProfessionals/{medicalProfessionalId}
-     * @allow       (get, update, delete) A logged-in user (auth.uid='user123') can read or modify their own document at /medicalProfessionals/user123.
-     * @allow       (create) A new user (auth.uid='user123') can create their own document at /medicalProfessionals/user123, provided the document data includes `id: 'user123'`.
-     * @deny        (get) A user ('user123') cannot read another user's document at /medicalProfessionals/user456.
-     * @deny        (list) No user can list all documents in the `/medicalProfessionals` collection.
-     * @deny        (create) A user ('user123') cannot create a document for another user at /medicalProfessionals/user456.
-     * @principle   Restricts access to a user's own data tree and enforces relational integrity on create.
+     * @allow       (get) An owner can read their own doc. An admin can read any doc.
+     * @allow       (list) An admin can list all docs.
+     * @allow       (update, delete) A logged-in user can modify their own document.
+     * @allow       (create) A new user can create their own document.
+     * @deny        (get) A non-admin user cannot read another user's document.
+     * @deny        (list) A non-admin cannot list all documents.
+     * @principle   Restricts access to a user's own data tree, with an exception for admins.
      */
     match /medicalProfessionals/{medicalProfessionalId} {
-      // READ Rules: Only the owner can get their document. Listing the entire collection is forbidden.
-      allow get: if isOwner(medicalProfessionalId);
-      allow list: if false;
+      // READ Rules: Owner can get their doc, admins can get any doc or list all.
+      allow get: if isOwner(medicalProfessionalId) || isAdmin();
+      allow list: if isAdmin();
 
       // WRITE Rules: Users can create, update, and delete ONLY their own document.
       allow create: if isCreatingSelf(medicalProfessionalId);
