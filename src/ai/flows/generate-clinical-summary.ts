@@ -17,7 +17,8 @@ import {z} from 'genkit';
  const ai = genkit({
   plugins: [
     googleAI({
-      apiKey: process.env.GEMINI_API_KEY,
+  
+     apiKey:import.meta.env.GEMINI_API_KEY
     }),
   ],
   model: 'googleai/gemini-2.5-flash',
