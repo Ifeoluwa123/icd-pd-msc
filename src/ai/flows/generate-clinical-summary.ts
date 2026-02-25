@@ -7,8 +7,20 @@
  * - ClinicalSummaryOutput - The return type for the generateClinicalSummary function.
  */
 
-import {ai} from '@/ai/genkit';
+import {genkit} from 'genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'genkit';
+
+ const ai = genkit({
+  plugins: [
+    googleAI({
+      apiKey: process.env.GEMINI_API_KEY,
+    }),
+  ],
+  model: 'googleai/gemini-2.5-flash',
+});
+
+
 
 const ClinicalSummaryInputSchema = z.object({
   riskScore: z.number().describe('The overall ICD risk score for the patient (0-100).'),
