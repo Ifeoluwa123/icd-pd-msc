@@ -15,14 +15,10 @@ import {z} from 'genkit';
 
 
  const ai = genkit({
-  plugins: [
-    googleAI({
-  
-     apiKey:import.meta.env.GEMINI_API_KEY
-    }),
-  ],
+  plugins: [googleAI()],
   model: 'googleai/gemini-2.5-flash',
-});
+  // model: 'googleai/gemini-1.5-flash',
+});;
 
 
 
