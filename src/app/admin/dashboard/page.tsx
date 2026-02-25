@@ -20,7 +20,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (isUserLoading) return;
-    if (!user) {
+    if (user) {
         router.push('/admin/login');
         return;
     }
