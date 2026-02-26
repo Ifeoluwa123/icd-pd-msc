@@ -99,7 +99,7 @@ export default function LoginPage() {
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
              <BrainCircuit className="h-10 w-10 text-primary mx-auto" />
-            <h1 className="text-3xl font-bold font-headline">Medical Professional Login</h1>
+            <h1 className="text-3xl font-bold font-headline"> Login Page</h1>
             <p className="text-balance text-muted-foreground">
               Enter your email below to login to your account
             </p>
